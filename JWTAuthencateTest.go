@@ -1,11 +1,11 @@
 package main
 
 import (
+	_ "github.com/echomas/DebugWithSourceCodeGin/docs"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "github.com/your-username/gin-auth-api/docs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net/http"
@@ -86,6 +86,15 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
+// @Summary 用户注册
+// @Description 使用用户名、密码和邮箱注册一个新用户
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param body body RegisterInput true "注册信息"
+// @Success 200 {object} map[string]string "{"message": "User registered successfully"}"
+// @Failure 400 {object} map[string]string "{"error": "error message"}"
+// @Router /auth/register [post]
 func Register2(c *gin.Context) {
 	var registrationData UserRegistration2
 	if err := c.ShouldBindJSON(&registrationData); err != nil {
@@ -112,6 +121,15 @@ func Register2(c *gin.Context) {
 	})
 }
 
+// @Summary 用户登录
+// @Description 使用用户名和密码登录，成功后返回 JWT
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param body body LoginInput true "登录凭证"
+// @Success 200 {object} map[string]string "{"token": "jwt_token_string"}"
+// @Failure 400 {object} map[string]string "{"error": "error message"}"
+// @Router /auth/login [post]
 func Login2(c *gin.Context) {
 	var credentials LoginCredentials
 	if err := c.ShouldBindJSON(&credentials); err != nil {
@@ -154,6 +172,14 @@ func Login2(c *gin.Context) {
 	})
 }
 
+// @Summary 获取用户个人资料
+// @Description 获取当前登录用户的个人信息
+// @Tags User
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} map[string]models.User
+// @Failure 401 {object} map[string]string "{"error": "error message"}"
+// @Router /api/profile [get]
 func GetProfile2(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -177,6 +203,25 @@ func GetProfile2(c *gin.Context) {
 	})
 }
 
+// @title Gin Auth API
+// @version 1.0
+// @description 这是一个使用 Gin 框架构建的带 JWT 认证的示例 API 服务。
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /
+// @schemes http
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	dsn := "root:your_password@tcp(127.0.0.1:3306)/gin_app?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
