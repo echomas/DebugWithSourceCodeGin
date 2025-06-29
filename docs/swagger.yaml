@@ -1,0 +1,141 @@
+definitions:
+  main.LoginCredentials:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  main.UserProfileResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      joined_at:
+        type: string
+      username:
+        type: string
+    type: object
+  main.UserRegistration2:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 20
+        minLength: 6
+        type: string
+      username:
+        maxLength: 12
+        minLength: 4
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+info:
+  contact: {}
+paths:
+  /api/profile:
+    get:
+      description: Get the profile information of the current user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.UserProfileResponse'
+        "401":
+          description: '{"error": "Unauthorized"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: '{"error": "User not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get user profile
+      tags:
+      - User
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Log in with username and password to receive a JWT.
+      parameters:
+      - description: Login Credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.LoginCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"token": "jwt_token_string"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '{"error": "Invalid input"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: '{"error": "Invalid credentials"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with a username, password, and email.
+      parameters:
+      - description: Registration Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.UserRegistration2'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "user registered", "userID": 1}'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: '{"error": "Invalid input"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: '{"error": "User already exists"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User registration
+      tags:
+      - Authentication
+swagger: "2.0"

@@ -86,14 +86,16 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// @Summary 用户注册
-// @Description 使用用户名、密码和邮箱注册一个新用户
+// Register2 handles new user registration.
+// @Summary User registration
+// @Description Register a new user with a username, password, and email.
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param body body RegisterInput true "注册信息"
-// @Success 200 {object} map[string]string "{"message": "User registered successfully"}"
-// @Failure 400 {object} map[string]string "{"error": "error message"}"
+// @Param body body UserRegistration2 true "Registration Info"
+// @Success 200 {object} map[string]interface{} "{"message": "user registered", "userID": 1}"
+// @Failure 400 {object} map[string]string "{"error": "Invalid input"}"
+// @Failure 409 {object} map[string]string "{"error": "User already exists"}"
 // @Router /auth/register [post]
 func Register2(c *gin.Context) {
 	var registrationData UserRegistration2
@@ -121,14 +123,16 @@ func Register2(c *gin.Context) {
 	})
 }
 
-// @Summary 用户登录
-// @Description 使用用户名和密码登录，成功后返回 JWT
+// Login2 handles user login and JWT token generation.
+// @Summary User login
+// @Description Log in with username and password to receive a JWT.
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param body body LoginInput true "登录凭证"
+// @Param body body LoginCredentials true "Login Credentials"
 // @Success 200 {object} map[string]string "{"token": "jwt_token_string"}"
-// @Failure 400 {object} map[string]string "{"error": "error message"}"
+// @Failure 400 {object} map[string]string "{"error": "Invalid input"}"
+// @Failure 401 {object} map[string]string "{"error": "Invalid credentials"}"
 // @Router /auth/login [post]
 func Login2(c *gin.Context) {
 	var credentials LoginCredentials
@@ -172,13 +176,22 @@ func Login2(c *gin.Context) {
 	})
 }
 
-// @Summary 获取用户个人资料
-// @Description 获取当前登录用户的个人信息
+type UserProfileResponse struct {
+	Username string    `json:"username"`
+	ID       uint      `json:"id"`
+	JoinedAt time.Time `json:"joined_at"`
+	Email    string    `json:"email"`
+}
+
+// GetProfile2 retrieves the profile of the currently logged-in user.
+// @Summary Get user profile
+// @Description Get the profile information of the current user.
 // @Tags User
 // @Produce json
 // @Security ApiKeyAuth
-// @Success 200 {object} map[string]models.User
-// @Failure 401 {object} map[string]string "{"error": "error message"}"
+// @Success 200 {object} UserProfileResponse
+// @Failure 401 {object} map[string]string "{"error": "Unauthorized"}"
+// @Failure 404 {object} map[string]string "{"error": "User not found"}"
 // @Router /api/profile [get]
 func GetProfile2(c *gin.Context) {
 	userID, exists := c.Get("userID")
@@ -195,12 +208,14 @@ func GetProfile2(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"id":        user.ID,
-		"username":  user.Username,
-		"email":     user.Email,
-		"joined_at": user.CreatedAt,
-	})
+
+	response := UserProfileResponse{
+		ID:       user.ID,
+		Username: user.Username,
+		JoinedAt: user.CreatedAt,
+		Email:    user.Email,
+	}
+	c.JSON(http.StatusOK, response)
 }
 
 // @title Gin Auth API
